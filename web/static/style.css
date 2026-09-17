@@ -1,0 +1,96 @@
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap');
+
+:root {
+    --bg: #08080A;
+    --bg-elevated: #0C0C0F;
+    --surface: #131316;
+    --surface-hover: #1B1B1F;
+    --border: #232327;
+    --text: #F7F7F8;
+    --text-muted: #9A9AA4;
+    --gold: #D7FF4E;
+    --gold-strong: #E6FF80;
+    --gold-soft: rgba(215, 255, 78, 0.10);
+    --green: #22C55E;
+    --green-soft: rgba(34, 197, 94, 0.12);
+    --red: #F0455C;
+    --red-soft: rgba(240, 69, 92, 0.12);
+}
+
+* { box-sizing: border-box; }
+
+body {
+    margin: 0; background: var(--bg); color: var(--text);
+    font-family: 'Inter', sans-serif;
+}
+
+h1, h2, h3, h4 { font-family: 'Space Grotesk', sans-serif; font-weight: 600; margin: 0; }
+
+.mono { font-family: 'JetBrains Mono', monospace; }
+
+/* ---------- Header / Navbar ---------- */
+.plutos-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 16px 28px; border-bottom: 1px solid var(--border);
+}
+.plutos-brand { display: flex; align-items: center; gap: 10px; }
+.plutos-brand span { font-size: 19px; font-weight: 700; letter-spacing: 0.01em; }
+.plutos-user { color: var(--text-muted); font-size: 14px; }
+.plutos-logout {
+    background: transparent; border: 1px solid var(--border); color: var(--text-muted);
+    border-radius: 6px; padding: 6px 12px; cursor: pointer; font-family: 'Inter', sans-serif;
+}
+.plutos-logout:hover { color: var(--text); border-color: var(--gold); }
+
+/* ---------- Layout ---------- */
+.container { max-width: 1080px; margin: 0 auto; padding: 28px; }
+.hr { border: none; border-top: 1px solid var(--border); margin: 22px 0; }
+
+/* ---------- Cards / Metrics ---------- */
+.metric-row { display: flex; gap: 16px; flex-wrap: wrap; margin-bottom: 8px; }
+.metric-card {
+    flex: 1; min-width: 200px; background: var(--surface); border: 1px solid var(--border);
+    border-radius: 8px; padding: 16px 18px;
+}
+.metric-card .label { color: var(--text-muted); font-size: 12px; text-transform: uppercase; letter-spacing: 0.06em; }
+.metric-card .value { font-family: 'JetBrains Mono', monospace; font-size: 24px; font-weight: 600; margin-top: 6px; }
+.metric-card .delta { font-family: 'JetBrains Mono', monospace; font-size: 13px; margin-top: 4px; }
+.delta.up { color: var(--green); }
+.delta.down { color: var(--red); }
+
+/* ---------- Tables ---------- */
+table { width: 100%; border-collapse: collapse; font-size: 14px; }
+th { text-align: left; color: var(--text-muted); font-weight: 500; padding: 8px 10px; border-bottom: 1px solid var(--border); font-size: 12px; text-transform: uppercase; letter-spacing: 0.04em; }
+td { padding: 9px 10px; border-bottom: 1px solid var(--border); font-family: 'JetBrains Mono', monospace; }
+tr:last-child td { border-bottom: none; }
+.two-col { display: flex; gap: 24px; flex-wrap: wrap; }
+.two-col > div { flex: 1; min-width: 320px; }
+.panel { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 18px; }
+
+/* ---------- Login ---------- */
+.login-wrap { min-height: 100vh; display: flex; align-items: center; justify-content: center; }
+.login-card {
+    background: var(--bg-elevated); border: 1px solid var(--border); border-radius: 8px;
+    padding: 36px; width: 100%; max-width: 380px;
+}
+.login-card .plutos-brand { margin-bottom: 24px; }
+label { display: block; font-size: 13px; color: var(--text-muted); margin: 14px 0 6px 0; }
+input {
+    width: 100%; background: var(--surface); border: 1px solid var(--border); color: var(--text);
+    border-radius: 6px; padding: 10px 12px; font-family: 'Inter', sans-serif; font-size: 14px;
+}
+input:focus { outline: none; border-color: var(--gold); }
+button.primary {
+    width: 100%; margin-top: 20px; background: var(--gold); color: #0A0A0A; border: none;
+    border-radius: 6px; padding: 11px; font-weight: 700; font-family: 'Space Grotesk', sans-serif;
+    cursor: pointer; font-size: 14.5px;
+}
+button.primary:hover { background: var(--gold-strong); }
+.switch-link { text-align: center; margin-top: 16px; font-size: 13px; color: var(--text-muted); }
+.switch-link a { color: var(--gold); cursor: pointer; text-decoration: none; }
+.error-msg { color: var(--red); font-size: 13px; margin-top: 10px; min-height: 16px; }
+
+.phase-note {
+    background: var(--gold-soft); border: 1px solid rgba(215,255,78,0.3); border-radius: 6px;
+    padding: 10px 14px; font-size: 13px; color: var(--gold-strong); margin-bottom: 20px;
+}
