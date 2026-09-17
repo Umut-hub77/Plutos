@@ -1,0 +1,16 @@
+streamlit>=1.36
+pandas
+numpy
+scipy
+plotly
+requests
+beautifulsoup4
+yfinance
+pandas_ta
+twilio
+schedule
+bcrypt
+python-dotenv
+sqlalchemy
+psycopg2-binary
+anthropic

@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<title>Plutos — Giriş</title>
+<link rel="stylesheet" href="/style.css">
+</head>
+<body>
+<div class="login-wrap">
+    <div class="login-card">
+        <div class="plutos-brand">
+            <svg width="26" height="26" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="20" cy="20" r="18.5" stroke="#D7FF4E" stroke-width="2"/>
+                <path d="M15 11.5H21.2C24.5 11.5 27 13.9 27 17C27 20.1 24.5 22.4 21.2 22.4H16.6V28.5H15V11.5Z"
+                      stroke="#D7FF4E" stroke-width="2" stroke-linejoin="round"/>
+            </svg>
+            <span>PLUTOS</span>
+        </div>
+
+        <h2 id="form-baslik">Giriş Yap</h2>
+
+        <div id="kayit-alanlari" style="display:none;">
+            <label>Ad</label><input id="ad" type="text">
+            <label>Soyad</label><input id="soyad" type="text">
+        </div>
+
+        <label>E-posta</label>
+        <input id="email" type="email" placeholder="ornek@mail.com">
+        <label>Şifre</label>
+        <input id="password" type="password" placeholder="••••••••">
+
+        <button class="primary" id="submit-btn" onclick="gonder()">Giriş Yap</button>
+        <div class="error-msg" id="hata"></div>
+
+        <div class="switch-link">
+            <span id="switch-text">Hesabınız yok mu? <a onclick="modDegistir()">Kayıt olun</a></span>
+        </div>
+    </div>
+</div>
+
+<script>
+let kayitModu = false;
+
+function modDegistir() {
+    kayitModu = !kayitModu;
+    document.getElementById('form-baslik').innerText = kayitModu ? 'Kayıt Ol' : 'Giriş Yap';
+    document.getElementById('kayit-alanlari').style.display = kayitModu ? 'block' : 'none';
+    document.getElementById('submit-btn').innerText = kayitModu ? 'Kayıt Ol' : 'Giriş Yap';
+    document.getElementById('switch-text').innerHTML = kayitModu
+        ? 'Zaten hesabınız var mı? <a onclick="modDegistir()">Giriş yapın</a>'
+        : 'Hesabınız yok mu? <a onclick="modDegistir()">Kayıt olun</a>';
+    document.getElementById('hata').innerText = '';
+}
+
+async function gonder() {
+    const email = document.getElementById('email').value.trim();
+    const password = document.getElementById('password').value;
+    const hataEl = document.getElementById('hata');
+    hataEl.innerText = '';
+
+    if (!email || !password) { hataEl.innerText = 'E-posta ve şifre gerekli.'; return; }
+
+    const yol = kayitModu ? '/api/register' : '/api/login';
+    const govde = kayitModu
+        ? { email, password, ad: document.getElementById('ad').value, soyad: document.getElementById('soyad').value }
+        : { email, password };
+
+    try {
+        const yanit = await fetch(yol, {
+            method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(govde),
+        });
+        const veri = await yanit.json();
+        if (!yanit.ok) { hataEl.innerText = veri.detail || 'Bir hata oluştu.'; return; }
+
+        localStorage.setItem('plutos_token', veri.token);
+        localStorage.setItem('plutos_ad', veri.ad || '');
+        window.location.href = '/dashboard.html';
+    } catch (e) {
+        hataEl.innerText = 'Sunucuya bağlanılamadı.';
+    }
+}
+
+document.getElementById('password').addEventListener('keydown', (e) => { if (e.key === 'Enter') gonder(); });
+</script>
+</body>
+</html>

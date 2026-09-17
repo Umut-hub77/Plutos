@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<title>Plutos — Ana Sayfa</title>
+<link rel="stylesheet" href="/style.css">
+</head>
+<body>
+
+<div class="plutos-header">
+    <div class="plutos-brand">
+        <svg width="24" height="24" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="20" cy="20" r="18.5" stroke="#D7FF4E" stroke-width="2"/>
+            <path d="M15 11.5H21.2C24.5 11.5 27 13.9 27 17C27 20.1 24.5 22.4 21.2 22.4H16.6V28.5H15V11.5Z"
+                  stroke="#D7FF4E" stroke-width="2" stroke-linejoin="round"/>
+        </svg>
+        <span>PLUTOS</span>
+    </div>
+    <div style="display:flex; align-items:center; gap:16px;">
+        <span class="plutos-user" id="kullanici-adi"></span>
+        <button class="plutos-logout" onclick="cikisYap()">Çıkış</button>
+    </div>
+</div>
+
+<div class="container">
+    <div class="phase-note">
+        ⚠️ Bu, Streamlit uygulamasının web sürümünün <b>Faz 1</b> iskeletidir — şu an sadece Ana Sayfa ve
+        salt-okunur portföy görünümü çalışıyor. Analiz, Emir Ver, FIRE gibi diğer modüller sonraki fazlarda eklenecek.
+    </div>
+
+    <h2 id="karsilama">Hoş geldiniz</h2>
+
+    <div class="metric-row" id="ust-metrikler">
+        <div class="metric-card"><div class="label">BIST 100</div><div class="value">—</div></div>
+        <div class="metric-card"><div class="label">Toplam Varlık</div><div class="value">—</div></div>
+        <div class="metric-card"><div class="label">Sanal Nakit</div><div class="value">—</div></div>
+    </div>
+
+    <hr class="hr">
+
+    <div class="two-col">
+        <div>
+            <h4>📈 En Çok Yükselenler</h4>
+            <div class="panel"><table id="tbl-yukselen"><thead><tr><th>Hisse</th><th>Fiyat</th><th>Değişim</th></tr></thead><tbody></tbody></table></div>
+        </div>
+        <div>
+            <h4>📉 En Çok Düşenler</h4>
+            <div class="panel"><table id="tbl-dusen"><thead><tr><th>Hisse</th><th>Fiyat</th><th>Değişim</th></tr></thead><tbody></tbody></table></div>
+        </div>
+    </div>
+
+    <hr class="hr">
+
+    <h4>Varlıklarım</h4>
+    <div class="panel"><table id="tbl-portfoy"><thead><tr><th>Hisse</th><th>Lot</th><th>Ort. Maliyet</th><th>Güncel Fiyat</th><th>Piyasa Değeri</th></tr></thead><tbody></tbody></table></div>
+</div>
+
+<script>
+const token = localStorage.getItem('plutos_token');
+if (!token) window.location.href = '/index.html';
+
+document.getElementById('kullanici-adi').innerText = localStorage.getItem('plutos_ad') || '';
+document.getElementById('karsilama').innerText = 'Hoş geldiniz, ' + (localStorage.getItem('plutos_ad') || '') ;
+
+function cikisYap() {
+    localStorage.removeItem('plutos_token');
+    localStorage.removeItem('plutos_ad');
+    window.location.href = '/index.html';
+}
+
+function fmt(n, ondalik = 2) {
+    return Number(n).toLocaleString('tr-TR', { minimumFractionDigits: ondalik, maximumFractionDigits: ondalik });
+}
+
+async function anaSayfaYukle() {
+    try {
+        const r = await fetch('/api/market-overview');
+        const veri = await r.json();
+
+        const metrikler = document.getElementById('ust-metrikler').children;
+        if (veri.endeks && veri.endeks.deger !== null) {
+            const degisimClass = veri.endeks.degisim >= 0 ? 'up' : 'down';
+            const isaret = veri.endeks.degisim >= 0 ? '+' : '';
+            metrikler[0].querySelector('.value').innerText = fmt(veri.endeks.deger, 0);
+            metrikler[0].insertAdjacentHTML('beforeend',
+                `<div class="delta ${degisimClass}">${isaret}${fmt(veri.endeks.degisim)}%</div>`);
+        }
+
+        const gövdeYaz = (id, liste) => {
+            const tbody = document.querySelector(`#${id} tbody`);
+            tbody.innerHTML = '';
+            liste.forEach(satir => {
+                const cls = satir.degisim >= 0 ? 'up' : 'down';
+                const isaret = satir.degisim >= 0 ? '+' : '';
+                tbody.insertAdjacentHTML('beforeend',
+                    `<tr><td>${satir.hisse}</td><td>${fmt(satir.fiyat)} ₺</td><td class="${cls}">${isaret}${fmt(satir.degisim)}%</td></tr>`);
+            });
+        };
+        gövdeYaz('tbl-yukselen', veri.en_cok_yukselen || []);
+        gövdeYaz('tbl-dusen', veri.en_cok_dusen || []);
+    } catch (e) {
+        console.error('Piyasa özeti alınamadı', e);
+    }
+}
+
+async function portfoyYukle() {
+    try {
+        const r = await fetch('/api/portfolio', { headers: { 'Authorization': 'Bearer ' + token } });
+        if (r.status === 401) { cikisYap(); return; }
+        const veri = await r.json();
+
+        const metrikler = document.getElementById('ust-metrikler').children;
+        metrikler[1].querySelector('.value').innerText = fmt(veri.toplam_varlik, 0) + ' ₺';
+        metrikler[2].querySelector('.value').innerText = fmt(veri.virtual_cash, 0) + ' ₺';
+
+        const tbody = document.querySelector('#tbl-portfoy tbody');
+        tbody.innerHTML = '';
+        if (!veri.pozisyonlar.length) {
+            tbody.innerHTML = '<tr><td colspan="5" style="color:var(--text-muted); font-family:Inter, sans-serif;">Portföyünüzde henüz hisse yok.</td></tr>';
+        }
+        veri.pozisyonlar.forEach(p => {
+            tbody.insertAdjacentHTML('beforeend',
+                `<tr><td>${p.hisse}</td><td>${p.lot}</td><td>${fmt(p.maliyet)} ₺</td><td>${fmt(p.guncel_fiyat)} ₺</td><td>${fmt(p.piyasa_degeri)} ₺</td></tr>`);
+        });
+    } catch (e) {
+        console.error('Portföy alınamadı', e);
+    }
+}
+
+anaSayfaYukle();
+portfoyYukle();
+</script>
+</body>
+</html>
